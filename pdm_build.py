@@ -5,14 +5,16 @@ from Cython.Build import cythonize
 from setuptools import Extension
 
 
-def pdm_build_initialize(context):
+def pdm_build_update_setup_kwargs(context, setup_kwargs):
     """
-    Initialize the build with Cython extensions.
+    Update setup kwargs with Cython extensions.
     
-    This hook is called during PDM build to compile Cython extensions.
+    This hook is called during PDM build to add Cython extensions
+    to the build process.
     
     Args:
         context: PDM build context object
+        setup_kwargs: Dictionary of setup() keyword arguments
         
     """
     extensions = [
@@ -24,27 +26,8 @@ def pdm_build_initialize(context):
         )
     ]
     
-    # Cythonize the extensions
-    cythonized = cythonize(
+    # Cythonize the extensions and add to setup kwargs
+    setup_kwargs['ext_modules'] = cythonize(
         extensions,
         compiler_directives={'language_level': '3'},
     )
-    
-    # Update the metadata with the extensions
-    if hasattr(context, 'config'):
-        context.config.data['ext_modules'] = cythonized
-
-
-def pdm_build_update_setup_kwargs(context, setup_kwargs):
-    """
-    Update setup kwargs with Cython extensions.
-    
-    Args:
-        context: PDM build context object
-        setup_kwargs: Dictionary of setup() keyword arguments
-        
-    """
-    if hasattr(context, 'config'):
-        ext_modules = context.config.data.get('ext_modules', [])
-        if ext_modules:
-            setup_kwargs['ext_modules'] = ext_modules
