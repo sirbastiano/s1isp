@@ -1,76 +1,32 @@
-name: CI
+# GitHub Actions workflow for publishing a Python package to PyPI upon release.
+name: Publish Python Package to PyPI on Release
 
 on:
-  push:
-  pull_request:
-    branches: [ "main" ]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-env:
-  PACKAGE: s1isp
+    workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} ${{ matrix.python-version }}
-    strategy:
-      matrix:
-        python-version: ["3.10", "3.x"]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+    pypi-publish:
+        name: PyPI Release Publication
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write # Required for trusted publishing
+        steps:
+          - name: Checkout Repository
+            uses: actions/checkout@v4
 
-    steps:
-      - uses: actions/checkout@v4
+          - name: Configure Python Environment
+            uses: actions/setup-python@v4
+            with:
+              python-version: "3.x"
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
+          - name: Configure PDM Environment
+            uses: pdm-project/setup-pdm@v4
+            with:
+              python-version: "3.x"
+              cache: true
 
-      - name: Install build dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install build twine
+          - name: Build Python Package
+            run: pdm build
 
-      - name: Build package
-        run: |
-          python -m build
-          python -m twine check dist/*
-
-      - name: Upload source distribution
-        uses: actions/upload-artifact@v4
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.x' }}
-        with:
-          name: sdist
-          path: |
-            dist/*.tar.gz
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-whl-${{ matrix.os }}-${{ matrix.python-version }}
-          path: |
-            dist/*.whl
-
-      - name: Install
-        shell: bash
-        run: |
-          WHEEL=$(ls dist/${PACKAGE}-*.whl)
-          python -m pip install --upgrade pip
-          python -m pip install ${WHEEL}[cli,s1aux]
-
-      - name: Install test dependencies
-        shell: bash
-        run: |
-          python -m pip install pytest pytest-cov
-          if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
-
-      - name: Test
-        working-directory: tests
-        shell: bash
-        run: |
-          python -m pytest --cov=${PACKAGE} --cov-report=html --cov-report=term .
+          - name: Upload Distributions to PyPI
+            uses: pypa/gh-action-pypi-publish@release/v1
