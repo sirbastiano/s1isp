@@ -1,5 +1,5 @@
 [build-system]
-requires = ["pdm-backend", "Cython", "numpy"]
+requires = ["pdm-backend", "Cython", "numpy", "setuptools"]
 build-backend = "pdm.backend"
 
 
