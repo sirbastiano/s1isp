@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=77.0.0", "Cython", "numpy"]
-build-backend = "setuptools.build_meta"
+requires = ["pdm-backend", "Cython", "numpy"]
+build-backend = "pdm.backend"
 
 
 [project]
@@ -45,12 +45,49 @@ Changelog = "https://github.com/avalentino/s1isp/blob/main/docs/NEWS.rst"
 Issues = "https://github.com/avalentino/s1isp/issues"
 
 
-[tool.setuptools]
-packages = ["s1isp"]
+[tool.pdm]
+distribution = true
 
+[tool.pdm.build]
+package-dir = "."
+includes = ["s1isp/"]
+excludes = ["tests/", "notebooks/", "docs/"]
+source-includes = [
+    "src/huffman.*",
+    "requirements-test.txt",
+    "docs/**/*.rst",
+    "docs/**/*.txt",
+    "docs/**/Makefile",
+    "docs/**/make.bat",
+    "docs/**/conf.py",
+    "tests/**/*.py",
+    "tests/data/**/*.dat",
+    "tests/data/**/*.npz",
+    "tests/data/**/*.json",
+]
+custom-hook = "pdm_build.py"
 
-[tool.setuptools.dynamic]
-version = {attr = "s1isp.__version__"}
+[tool.pdm.version]
+source = "file"
+path = "s1isp/__init__.py"
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+dev = [
+    "black",
+    "isort",
+    "ruff",
+    "codespell",
+    "pydocstyle",
+    "tox",
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+]
 
 
 [tool.cibuildwheel]

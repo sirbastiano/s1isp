@@ -35,17 +35,29 @@ Requirements and Installation
 -----------------------------
 
 The package requires Cython and the `bitstruct` module. These dependencies are
-managed automatically by `setuptools` and the `pyproject.toml` file.
+managed automatically by PDM and the `pyproject.toml` file.
 
-To install the package, use the following command::
+**Using PDM (recommended)**::
+
+    $ pdm install
+
+For development with all optional dependencies::
+
+    $ pdm install -G:all
+
+To build the package::
+
+    $ pdm build
+
+**Using pip**::
 
     $ python3 -m pip install .
 
-For editable mode, use::
+For editable mode::
 
     $ python3 -m pip install --editable .
 
-For optional dependencies, use::
+For optional dependencies::
 
     $ python3 -m pip install s1isp[cli,hdf5]
 
